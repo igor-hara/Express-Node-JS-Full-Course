@@ -1,9 +1,12 @@
 import express from 'express';
-
+import morgan from 'morgan';
+import {query} from 'express-validator'
 
 const app = express();
 
 app.use(express.json());
+app.use(morgan('dev'));
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -34,7 +37,7 @@ app.get('/', (req, res) => {
   res.status(200).send({ msg: 'Hello' });
 });
 
-app.get('/api/users', (req, res) => {
+app.get('/api/users', query('filter').isString().notEmpty(), (req, res) => {
   const { filter, value } = req.query;
 
   // check if filter and value exist
