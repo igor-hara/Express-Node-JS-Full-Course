@@ -58,16 +58,13 @@ app.get('/api/users', (req, res) => {
 
 app.post('/api/users', checkSchema(createUserValidationSchema), (req, res) => {
   const result = validationResult(req);
-
   if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
-
-  console.log('result: ', result);
   const data = matchedData(req);
-  console.log('data: ', data);
-
+  // console.log('result: ', result);
+  // console.log('data: ', data);
   const newUser = { id: users[users.length - 1].id + 1, ...data };
+  
   users.push(newUser);
-
   return res.status(201).send(newUser);
 });
 
@@ -83,7 +80,6 @@ app.put('/api/users/:id', checkSchema(editUserValidationSchema), resolveIndexByU
 
   const result = validationResult(req);
   if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
-
   const data = matchedData(req);
 
   // update user
@@ -92,17 +88,14 @@ app.put('/api/users/:id', checkSchema(editUserValidationSchema), resolveIndexByU
     id,
     ...data
   };
-
   return res.sendStatus(200);
 });
 
 app.patch('/api/users/:id', resolveIndexByUserId, checkSchema(patchUserValidationSchema), (req, res) => {
   const { body, userIndex } = req;
-  
+
   const result = validationResult(req);
-
   if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
-
   const data = matchedData(req);
 
   // prvo zaljepi sve stare vrijednosti usera i zatim samo updataju one koje se nalaze u body
@@ -110,7 +103,6 @@ app.patch('/api/users/:id', resolveIndexByUserId, checkSchema(patchUserValidatio
     ...users[userIndex],
     ...data
   };
-
   return res.sendStatus(200);
 });
 
@@ -119,7 +111,6 @@ app.delete('/api/users/:id', resolveIndexByUserId, (req, res) => {
 
   // remove user
   const deletedUser = users.splice(userIndex, 1);
-
   // console.log('deletedUser', deletedUser);
   return res.sendStatus(200);
 });
