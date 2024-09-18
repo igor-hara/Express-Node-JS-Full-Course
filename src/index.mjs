@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
-import { query, body, validationResult, matchedData } from 'express-validator';
+import { query, body, validationResult, matchedData, checkSchema } from 'express-validator';
+import { createUserValidationSchema } from './utils/validationSchemas.mjs';
 
 
 const app = express();
@@ -37,18 +38,9 @@ app.get('/', (req, res) => {
   res.status(200).send({ msg: 'Hello' });
 });
 
-app.get('/api/users', query('filter').isString()
-  .notEmpty().withMessage('Filter is required')
-  .isLength({
-    min: 3,
-    max: 10
-  })
-  .withMessage('Filter must be between 3 and 10 characters'), (req, res) => {
+app.get('/api/users', (req, res) => {
   const { filter, value } = req.query;
-  const result = validationResult(req);
-  // console.log('result: ', result);
 
-  //
   // check if filter and value exist
   if (!filter || !value) {
     return res.send(users);
@@ -60,16 +52,7 @@ app.get('/api/users', query('filter').isString()
   );
 });
 
-app.post('/api/users', [body('name').isString().withMessage('Name must be a string!')
-  .notEmpty().withMessage('Name is' +
-    ' required')
-  .isLength({
-    min: 3,
-    max: 32
-  }).withMessage('Name must be between 3 and 32 characters'),
-  body('username').isString().withMessage('Username must be a string')
-    .notEmpty().withMessage('Username is required')
-], (req, res) => {
+app.post('/api/users', checkSchema(createUserValidationSchema), (req, res) => {
   const result = validationResult(req);
 
   if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
