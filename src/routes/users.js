@@ -5,7 +5,7 @@ import {
   createUserValidationSchema,
   editUserValidationSchema,
   patchUserValidationSchema
-} from '../utils/validationSchemas.mjs';
+} from '../utils/validationSchemas.js';
 import { resolveIndexByUserId } from '../utils/middleware.js';
 
 
