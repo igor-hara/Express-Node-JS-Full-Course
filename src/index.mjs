@@ -1,7 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import { query, body, validationResult, matchedData, checkSchema } from 'express-validator';
-import { createUserValidationSchema } from './utils/validationSchemas.mjs';
+import { createUserValidationSchema, editUserValidationSchema } from './utils/validationSchemas.mjs';
 
 
 const app = express();
@@ -74,13 +74,19 @@ app.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
   return (findUser) ? res.send(findUser) : res.status(404).send({ msg: 'User not found' });
 });
 
-app.put('/api/users/:id', resolveIndexByUserId, (req, res) => {
+app.put('/api/users/:id', checkSchema(editUserValidationSchema), resolveIndexByUserId, (req, res) => {
   const { body, userIndex, params: { id } } = req;
+  
+  const result = validationResult(req);
+  if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
+
+  const data = matchedData(req);
+
   // update user
   users[userIndex] = {
     // id: users[userIndex].id,
     id,
-    ...body
+    ...data
   };
 
   return res.sendStatus(200);
