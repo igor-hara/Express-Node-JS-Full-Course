@@ -1,7 +1,11 @@
 import express from 'express';
 import morgan from 'morgan';
 import { query, body, validationResult, matchedData, checkSchema } from 'express-validator';
-import { createUserValidationSchema, editUserValidationSchema } from './utils/validationSchemas.mjs';
+import {
+  createUserValidationSchema,
+  editUserValidationSchema,
+  patchUserValidationSchema
+} from './utils/validationSchemas.mjs';
 
 
 const app = express();
@@ -76,7 +80,7 @@ app.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
 
 app.put('/api/users/:id', checkSchema(editUserValidationSchema), resolveIndexByUserId, (req, res) => {
   const { body, userIndex, params: { id } } = req;
-  
+
   const result = validationResult(req);
   if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
 
@@ -92,13 +96,19 @@ app.put('/api/users/:id', checkSchema(editUserValidationSchema), resolveIndexByU
   return res.sendStatus(200);
 });
 
-app.patch('/api/users/:id', resolveIndexByUserId, (req, res) => {
+app.patch('/api/users/:id', resolveIndexByUserId, checkSchema(patchUserValidationSchema), (req, res) => {
   const { body, userIndex } = req;
+  
+  const result = validationResult(req);
+
+  if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
+
+  const data = matchedData(req);
 
   // prvo zaljepi sve stare vrijednosti usera i zatim samo updataju one koje se nalaze u body
   users[userIndex] = {
     ...users[userIndex],
-    ...body
+    ...data
   };
 
   return res.sendStatus(200);

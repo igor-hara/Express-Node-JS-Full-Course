@@ -65,6 +65,7 @@ export const editUserValidationSchema = {
 // PATCH /users/:id
 export const patchUserValidationSchema = {
   name: {
+    optional: true,
     isString: {
       errorMessage: 'Name must be a string'
     },
@@ -80,6 +81,7 @@ export const patchUserValidationSchema = {
     }
   },
   username: {
+    optional: true,
     isString: {
       errorMessage: 'Username must be a string'
     },
