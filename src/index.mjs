@@ -1,12 +1,12 @@
 import express from 'express';
 import morgan from 'morgan';
-import {query} from 'express-validator'
+import { query, body, validationResult, matchedData } from 'express-validator';
+
 
 const app = express();
 
 app.use(express.json());
 app.use(morgan('dev'));
-
 
 const PORT = process.env.PORT || 3000;
 
@@ -21,8 +21,8 @@ const users = [
 ];
 
 // middleware
-const resolveIndexByUserId = (req, res, next)=>{
-  const {  params: { id } } = req;
+const resolveIndexByUserId = (req, res, next) => {
+  const { params: { id } } = req;
   const parsedId = parseInt(id);
   if (isNaN(parsedId)) return res.sendStatus(400);
   // find users index
@@ -30,16 +30,25 @@ const resolveIndexByUserId = (req, res, next)=>{
   // if user does not exist value is: -1
   if (userIndex === -1) return res.sendStatus(404);
   req.userIndex = userIndex;
-  next()
-}
+  next();
+};
 
 app.get('/', (req, res) => {
   res.status(200).send({ msg: 'Hello' });
 });
 
-app.get('/api/users', query('filter').isString().notEmpty(), (req, res) => {
+app.get('/api/users', query('filter').isString()
+  .notEmpty().withMessage('Filter is required')
+  .isLength({
+    min: 3,
+    max: 10
+  })
+  .withMessage('Filter must be between 3 and 10 characters'), (req, res) => {
   const { filter, value } = req.query;
+  const result = validationResult(req);
+  // console.log('result: ', result);
 
+  //
   // check if filter and value exist
   if (!filter || !value) {
     return res.send(users);
@@ -51,23 +60,39 @@ app.get('/api/users', query('filter').isString().notEmpty(), (req, res) => {
   );
 });
 
-app.post('/api/users', (req, res) => {
-  const newUser = req.body;
+app.post('/api/users', [body('name').isString().withMessage('Name must be a string!')
+  .notEmpty().withMessage('Name is' +
+    ' required')
+  .isLength({
+    min: 3,
+    max: 32
+  }).withMessage('Name must be between 3 and 32 characters'),
+  body('username').isString().withMessage('Username must be a string')
+    .notEmpty().withMessage('Username is required')
+], (req, res) => {
+  const result = validationResult(req);
 
+  if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
+
+  console.log('result: ', result);
+  const data = matchedData(req);
+  console.log('data: ', data);
+
+  const newUser = { id: users[users.length - 1].id + 1, ...data };
   users.push(newUser);
 
   return res.status(201).send(newUser);
 });
 
-app.get('/api/users/:id', resolveIndexByUserId,(req, res) => {
+app.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
   const { userIndex } = req;
   // check if user exists
-  const findUser = users[userIndex]
+  const findUser = users[userIndex];
   return (findUser) ? res.send(findUser) : res.status(404).send({ msg: 'User not found' });
 });
 
-app.put('/api/users/:id', resolveIndexByUserId,(req, res) => {
-const {body, userIndex , params: { id }} = req;
+app.put('/api/users/:id', resolveIndexByUserId, (req, res) => {
+  const { body, userIndex, params: { id } } = req;
   // update user
   users[userIndex] = {
     // id: users[userIndex].id,
@@ -78,8 +103,8 @@ const {body, userIndex , params: { id }} = req;
   return res.sendStatus(200);
 });
 
-app.patch('/api/users/:id', resolveIndexByUserId,(req, res) => {
-  const { body,userIndex } = req;
+app.patch('/api/users/:id', resolveIndexByUserId, (req, res) => {
+  const { body, userIndex } = req;
 
   // prvo zaljepi sve stare vrijednosti usera i zatim samo updataju one koje se nalaze u body
   users[userIndex] = {
@@ -90,7 +115,7 @@ app.patch('/api/users/:id', resolveIndexByUserId,(req, res) => {
   return res.sendStatus(200);
 });
 
-app.delete('/api/users/:id', resolveIndexByUserId,(req, res) => {
+app.delete('/api/users/:id', resolveIndexByUserId, (req, res) => {
   const { userIndex } = req;
 
   // remove user
