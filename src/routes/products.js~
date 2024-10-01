@@ -13,6 +13,7 @@ router.get('/api/products', (req, res) => {
   if (req.cookies && req.cookies['my-cookie']) {
     return res.send({ id: 1, prize: 12.99, product: 'chicken breasts' });
   } else {
+
     return res.status(403).send({ msg: 'Get some cookies' });
   }
 });

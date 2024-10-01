@@ -4,11 +4,13 @@ import morgan from 'morgan';
 // import usersRouter from './routes/users.js';
 // import productsRouter from './routes/products.js';
 import routes from './routes/index.js';
+import cookieParser from 'cookie-parser';
 
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(morgan('dev'));
 app.use(routes);
 
