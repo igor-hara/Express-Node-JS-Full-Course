@@ -56,6 +56,12 @@ app.post('/api/auth', (req, res) => {
 
 // check if user is logged in
 app.get('/api/auth/status', (req, res) => {
+
+  // show i.e. map users from sessionStore
+  req.sessionStore.get(req.sessionID, (err, session) => {
+    console.log('user-session: ', session);
+  });
+
   return req.session.user ? res.status(200).send(req.session.user) : res.status(401).send({ msg: 'Not Authenticated' });
 });
 
