@@ -7,6 +7,8 @@ import routes from './routes/index.js';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 
+import { users } from './utils/helpers.js';
+
 
 const app = express();
 
@@ -34,6 +36,27 @@ app.get('/', (req, res) => {
   req.session.visited = true;
   res.cookie('my-cookie', 'test', { maxAge: 60000 * 60 });
   res.send('Hello World!');
+});
+
+// Session part 2. session exercise, example for Auth
+app.post('/api/auth', (req, res) => {
+  const { name, password } = req.body;
+
+  // TODO: validate username and password
+
+  const findUser = users.find(user => user.name === name && user.password === password);
+
+  // console.log('findUser', findUser);
+  if (!findUser) {
+    return res.sendStatus(401).send({ msg: 'Invalid username or password' });
+  }
+  req.session.user = findUser;
+  return res.status(200).send(findUser);
+});
+
+// check if user is logged in
+app.get('/api/auth/status', (req, res) => {
+  return req.session.user ? res.status(200).send(req.session.user) : res.status(401).send({ msg: 'Not Authenticated' });
 });
 
 app.listen(PORT, () => {
