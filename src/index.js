@@ -44,6 +44,28 @@ app.get('/api/auth/status', (req, res) => {
   return req.user ? res.send(req.user) : res.sendStatus(401);
 });
 
+app.post('/api/auth/logout', (req, res) => {
+  // check user is logged in
+  if (!req.user) return res.sendStatus(401);
+
+  req.logout(err => {
+    if (err) return res.sendStatus(400);
+
+    // Uništi sesiju
+    req.session.destroy(err => {
+      if (err) return res.sendStatus(500);
+      console.log('Session destroyed');
+
+      // Očisti cookie sesije iz browsera
+      res.clearCookie('connect.sid', { path: '/' });
+
+      console.log('User logged out and session destroyed');
+      res.sendStatus(200);
+    });
+  });
+
+});
+
 app.get('/', (req, res) => {
 
   console.log(req.session);
