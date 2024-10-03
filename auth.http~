@@ -1,0 +1,15 @@
+// LOGIN
+###
+POST http://localhost:3000/api/auth
+Content-Type: application/json
+
+{
+  "name": "Jane",
+  "password": "hello122"
+}
+
+###
+// Show user status
+GET http://localhost:3000/api/auth/status
+Content-Type: application/json
+
